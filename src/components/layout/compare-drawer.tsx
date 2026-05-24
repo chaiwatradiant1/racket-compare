@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Racket } from '@/data/rackets';
 import { MicroLabel } from '../primitives';
 
@@ -26,6 +26,11 @@ export function CompareDrawer({
   const [collapsed, setCollapsed] = useState(false);
   const slots = Array.from({ length: slotCount }, (_, i) => compareIds[i] || null);
   const empty = compareIds.length === 0;
+
+  // Auto-expand when rackets are added
+  useEffect(() => {
+    if (!empty) setCollapsed(false);
+  }, [empty]);
 
   // Collapsed pill — appears when empty OR when user toggles closed
   if (empty || collapsed) {
