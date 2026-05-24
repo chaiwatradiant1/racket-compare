@@ -35,29 +35,52 @@ const ALL_BRANDS = ['APACS', 'Babolat', 'Carlton', 'Dunlop', 'FZ Forza', 'Gosen'
 const ALL_STYLES = ['Power', 'Control', 'All-Around', 'Speed'];
 const ALL_WEIGHTS = ['3U (88g)', '4U (83g)', '5U (78g)'];
 
-/** Parse the current window hash into a route object. */
-function parseHash(): Route {
-  const h = window.location.hash.slice(1) || '/';
-  const [pathPart, queryPart] = h.split('?');
-  const path = pathPart || '/';
-  if (path === '/' || path === '') return { page: 'home' };
-  if (path.startsWith('/racket/')) return { page: 'racket', id: path.slice('/racket/'.length) };
-  if (path.startsWith('/compare')) {
-    const ids = (queryPart?.split('=')[1] || '').split(',').filter(Boolean);
+/** Parse the current URL into a route object. */
+function parseUrl(): Route {
+  // Support both hash-based and query-based routing
+  const hash = window.location.hash.slice(1);
+  const search = window.location.search;
+  
+  // Hash routing: #/compare?ids=a,b,c
+  if (hash) {
+    const [pathPart, queryPart] = hash.split('?');
+    const path = pathPart || '/';
+    if (path === '/' || path === '') return { page: 'home' };
+    if (path.startsWith('/racket/')) return { page: 'racket', id: path.slice('/racket/'.length) };
+    if (path.startsWith('/compare')) {
+      const ids = (queryPart?.split('=')[1] || '').split(',').filter(Boolean);
+      return { page: 'compare', ids };
+    }
+  }
+  
+  // Query routing: ?page=compare&ids=a,b,c (for direct URL access)
+  const params = new URLSearchParams(search);
+  const page = params.get('page');
+  if (page === 'compare') {
+    const ids = (params.get('ids') || '').split(',').filter(Boolean);
     return { page: 'compare', ids };
   }
+  if (page === 'racket') {
+    return { page: 'racket', id: params.get('id') || '' };
+  }
+  
   return { page: 'home' };
 }
 
-/** Navigate by updating the hash. */
+/** Navigate by updating the URL. */
 function navigate(page: string, opts?: { id?: string; ids?: string[] }) {
-  let hash = '#/';
-  if (page === 'racket') hash = `#/racket/${opts?.id}`;
-  else if (page === 'compare') {
+  if (page === 'home') {
+    window.location.hash = '#/';
+  } else if (page === 'racket') {
+    window.location.hash = `#/racket/${opts?.id}`;
+  } else if (page === 'compare') {
     const ids = (opts?.ids || []).filter(Boolean);
-    hash = `#/compare${ids.length ? '?ids=' + ids.join(',') : ''}`;
+    // Use query string for compare so it works on direct URL access
+    const q = ids.length ? `?page=compare&ids=${ids.join(',')}` : '?page=compare';
+    window.history.pushState(null, '', q);
+    // Also update hash for consistency
+    window.location.hash = `#/compare${ids.length ? '?ids=' + ids.join(',') : ''}`;
   }
-  window.location.hash = hash;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,12 +108,12 @@ export default function GridPage() {
 
   // Update route whenever hash changes.
   const handleHashChange = useCallback(() => {
-    setRoute(parseHash());
+    setRoute(parseUrl());
   }, []);
 
   // Bind hashchange on mount.
   useEffect(() => {
-    setRoute(parseHash());
+    setRoute(parseUrl());
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [handleHashChange]);
