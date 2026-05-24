@@ -31,9 +31,9 @@ interface Route {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const ALL_BRANDS = ['Yonex', 'Victor', 'Li-Ning'];
+const ALL_BRANDS = ['APACS', 'Babolat', 'Carlton', 'Dunlop', 'FZ Forza', 'Gosen', 'HEAD', 'Li-Ning', 'Mizuno', 'RSL', 'Victor', 'Wilson', 'Yonex'];
 const ALL_STYLES = ['Power', 'Control', 'All-Around', 'Speed'];
-const ALL_WEIGHTS = ['3U (88g)', '4U (83g)'];
+const ALL_WEIGHTS = ['3U (88g)', '4U (83g)', '5U (78g)'];
 
 /** Parse the current window hash into a route object. */
 function parseHash(): Route {
