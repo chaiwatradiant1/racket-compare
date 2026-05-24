@@ -175,6 +175,30 @@ export default function GridPage() {
   }, []);
 
   // ── Render ──
+  // If route is compare, render the compare page inline
+  if (route.page === 'compare') {
+    return (
+      <div className="app" data-page="compare">
+        <Header route={route} onNav={onNav} compareCount={compareIds.length} />
+        <main className="page page-compare">
+          <section className="empty-state empty-state-compare">
+            <MicroLabel>Compare</MicroLabel>
+            <p>Select rackets from the grid to compare them side by side.</p>
+          </section>
+        </main>
+        <CompareDrawer
+          rackets={RACKETS}
+          compareIds={compareIds}
+          slotCount={3}
+          onOpen={onOpen}
+          onRemove={removeFromCompare}
+          onClear={clearCompare}
+          onGoCompare={onGoCompare}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="app" data-page="home">
       <Header route={route} onNav={onNav} compareCount={compareIds.length} />
