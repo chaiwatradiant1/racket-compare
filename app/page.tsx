@@ -170,7 +170,7 @@ export default function GridPage() {
             </MicroLabel>
           </div>
           <h1 className="masthead-title">
-            A field guide to <em>seventy-nine</em> badminton rackets,
+            A field guide to <em>two-hundred-and-eighty-nine</em> badminton rackets,
             <br />
             tested on the page, not the court.
           </h1>
