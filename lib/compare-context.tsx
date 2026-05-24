@@ -41,17 +41,24 @@ interface CompareContextValue {
 
 const CompareContext = createContext<CompareContextValue | null>(null);
 
-function readStoredIds(): string[] {
+function readInitialIds(): string[] {
+  // Check URL query string first (for direct link sharing)
+  if (typeof window === 'undefined') return [];
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.compareIds) || "[]");
-    return Array.isArray(saved) ? saved.slice(0, SLOT_COUNT) : [];
-  } catch {
-    return [];
-  }
+    const params = new URLSearchParams(window.location.search);
+    const idsParam = params.get('ids');
+    if (idsParam) {
+      return idsParam.split(',').filter(Boolean).slice(0, SLOT_COUNT);
+    }
+  } catch { /* ignore */ }
+  
+  // Fall back to localStorage
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.compareIds) || "[]");
+  return Array.isArray(saved) ? saved.slice(0, SLOT_COUNT) : [];
 }
 
 export function CompareProvider({ children }: { children: ReactNode }) {
-  const [compareIds, setIds] = useState<string[]>([]);
+  const [compareIds, setIds] = useState<string[]>(readInitialIds);
   const [theme, setThemeState] = useState<Theme>("editorial");
 
   // Mirror the latest ids in a ref so the action callbacks stay referentially
@@ -61,7 +68,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   // Hydrate from localStorage after mount (server renders defaults → no mismatch).
   useEffect(() => {
-    const stored = readStoredIds();
+    const stored = readInitialIds();
     if (stored.length) {
       idsRef.current = stored;
       setIds(stored);
