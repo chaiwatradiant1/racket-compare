@@ -113,6 +113,13 @@ export default function GridPage() {
 
   // Bind hashchange on mount.
   useEffect(() => {
+    // If URL has query string ?page=compare&ids=..., redirect to hash-based URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('page') === 'compare') {
+      const ids = params.get('ids') || '';
+      window.location.replace(`#/compare${ids ? '?ids=' + ids : ''}`);
+      return;
+    }
     setRoute(parseUrl());
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -130,7 +137,7 @@ export default function GridPage() {
   }, []);
 
   const onGoCompare = useCallback(() => {
-    navigate('compare', { ids: compareIds });
+    window.location.hash = `#/compare${compareIds.length ? '?ids=' + compareIds.join(',') : ''}`;
   }, [compareIds]);
 
   // ── Filtering + sorting ──
